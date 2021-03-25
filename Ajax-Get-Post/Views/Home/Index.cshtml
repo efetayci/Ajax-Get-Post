@@ -1,0 +1,116 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="p-2">
+            <h4 class="text-center">Bir Kullanici Getir</h4>
+            <input type="text" id="kullaniciId" class="form-control" />
+            <button type="button" id="birKullaniciGetir" class="btn btn-block btn-info">Getir</button>
+        </div>
+        <div class="p-2" id="birKullanici">
+            
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="p-2">
+            <h4 class="text-center">Bütün Kullanıcıları Getir</h4>
+            <button type="button" id="tumKullaniciGetir" class="btn btn-block btn-info">Hepsini Getir</button>
+        </div>
+        <div class="p-2" id="AllUsers">
+              <div id ="loader" class="d-flex align-items-center" style="display:none!important;">
+              <strong>Loading...</strong>
+               <div class="spinner-border ms-auto" style="margin-left:30px;" role="status" aria-hidden="true"></div>
+               </div>
+        </div>
+    </div>
+
+    <div class="col-md-12">
+        <div class="p-2">
+            <h4 class="text-center">Kullanıcı Ekle</h4>
+            <input type="text" id="frmKullaniciId" class="form-control" />
+            <input type="text" id="frmKullaniciAd" class="form-control" />
+            <button type="button" id="kullaniciiEkle" class="btn btn-block btn-info">Ekle</button>
+        </div>
+    </div>
+
+
+
+@section JavaScript{
+    <script>
+        $(document).ready(function(){
+            
+            $("#birKullaniciGetir").click(function(){
+                let id = $("#kullaniciId").val();
+               
+                $.ajax({
+                    contentType:"application/json; charset=Utf-8;",
+                    dataType:"json",
+                    type:"Get",
+                    url:"/Home/GetById",
+                    data:{id:id},
+                    success:function(herhangi){
+                        let donustu = jQuery.parseJSON(herhangi)
+                        let htmlString = `<table class="table table-hover table-sm">
+                    <tr><th>Kullanıcı Id</th><td>${donustu.Id}</td><tr>
+                    <tr><th>Kullanıcı Ad</th><td>${donustu.Ad}</td><tr>
+                    </table>`;
+                    $("#birKullanici").html(htmlString);
+                    }
+                });
+            });
+
+            $("#tumKullaniciGetir").click(function(){
+
+                $.ajax({
+                    contentType:"application/json; charset=Utf-8;",
+                    dataType:"json",
+                    type:"Get",
+                    url:"/Home/GetAll",
+                    beforeSend:function(){
+                        $("#loader").show();
+                    },
+                    success:function(data){
+                         $("#loader").hide();
+                        let users = jQuery.parseJSON(data)
+                        let html=`<table class="table table-hover table-sm">
+                        <tr><th>Kullanıcı Id</th> <th>Kullanıcı Ad</th><tr>`
+                        $.each(users,(index,value)=>{
+                            
+                            html+=`<tr><td>${value.Id}</td><td>${value.Ad}</td></tr>`;
+                            
+                        });
+                        html+=`</table>`;
+                        $("#AllUsers").html(html);
+                    }
+                });
+            });
+
+            $("#kullaniciiEkle").click(function(){
+
+                let kullanici={
+                    Id:$("#frmKullaniciId").val(),
+                    Ad:$("#frmKullaniciAd").val()
+                };
+                $.ajax({
+                    
+                    type:"Post",
+                    url:"/Home/Add",
+                    data:kullanici,
+                    success:function(response){
+                        let object = jQuery.parseJSON(response);
+                        alert(object.Ad+"başarılı eklendi");
+                    }
+                
+                });
+            });
+
+        });
+    </script>
+}
